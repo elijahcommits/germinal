@@ -6,6 +6,9 @@ import argparse
 import google.generativeai as genai
 import sys
 import xml.etree.ElementTree as ET
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.text import Text # NEW: Import Text for consistent styling
 
 # --- Configuration Constants ---
 DEFAULT_MODEL = 'gemini-1.5-flash-latest' # Set your default model here
@@ -17,47 +20,38 @@ CONFIG = {
     "colors": {}
 }
 
-# --- ANSI Color Codes Mapping ---
-# Basic ANSI escape codes for foreground and background colors
-COLOR_MAP = {
-    "black": "\033[30m",
-    "red": "\033[31m",
-    "green": "\033[32m",
-    "yellow": "\033[33m",
-    "blue": "\033[34m",
-    "magenta": "\033[35m",
-    "cyan": "\033[36m",
-    "white": "\033[37m",
-    # Bright versions
-    "light_black": "\033[90m", # Often displayed as gray
-    "light_red": "\033[91m",
-    "light_green": "\033[92m",
-    "light_yellow": "\033[93m",
-    "light_blue": "\033[94m",
-    "light_magenta": "\033[95m",
-    "light_cyan": "\033[96m",
-    "light_white": "\033[97m",
-    # Background colors (add if needed, e.g., for code blocks)
-    "bg_black": "\033[40m",
-    "bg_red": "\033[41m",
-    "bg_green": "\033[42m",
-    "bg_yellow": "\033[43m",
-    "bg_blue": "\033[44m",
-    "bg_magenta": "\033[45m",
-    "bg_cyan": "\033[46m",
-    "bg_white": "\033[47m",
-    # Reset to default
-    "reset": "\033[0m"
-}
+# No longer need COLOR_MAP for direct ANSI codes, rich handles styles directly.
+# Keeping it commented out for reference if needed for very specific non-rich cases.
+# COLOR_MAP = {
+#     "black": "\033[30m", "red": "\033[31m", "green": "\033[32m", "yellow": "\033[33m",
+#     "blue": "\033[34m", "magenta": "\033[35m", "cyan": "\033[36m", "white": "\033[37m",
+#     "light_black": "\033[90m", "light_red": "\033[91m", "light_green": "\033[92m",
+#     "light_yellow": "\033[93m", "light_blue": "\033[94m", "light_magenta": "\033[95m",
+#     "light_cyan": "\033[96m", "light_white": "\033[97m",
+#     "reset": "\033[0m"
+# }
 
-def apply_color(text, element_name):
+
+# Initialize Rich Console for all output
+console = Console()
+
+def get_rich_style_name(element_name):
     """
-    Applies ANSI color codes to text based on element_name defined in CONFIG["colors"].
+    Retrieves the rich-compatible style name from CONFIG["colors"].
+    Rich understands common color names (e.g., "cyan", "light_red")
+    and can even use hex codes like "#FF00FF" if you configure them.
     """
     color_name = CONFIG["colors"].get(element_name)
-    if color_name and color_name in COLOR_MAP:
-        return f"{COLOR_MAP[color_name]}{text}{COLOR_MAP['reset']}"
-    return text # Return original text if color not found or not defined
+    return color_name if color_name else "default" # Fallback to rich's default style
+
+
+def apply_rich_style(text, element_name):
+    """
+    Applies rich styling to text using Text objects.
+    Returns a rich.text.Text object ready for console.print().
+    """
+    style_name = get_rich_style_name(element_name)
+    return Text(text, style=style_name)
 
 
 def get_api_key():
@@ -67,8 +61,8 @@ def get_api_key():
     """
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        print(apply_color("Error: GOOGLE_API_KEY environment variable not set.", "error-message"))
-        print(apply_color("Please set your Gemini API key: export GOOGLE_API_KEY='YOUR_API_KEY'", "system-message"))
+        console.print(apply_rich_style("Error: GOOGLE_API_KEY environment variable not set.", "error-message"))
+        console.print(apply_rich_style("Please set your Gemini API key: export GOOGLE_API_KEY='YOUR_API_KEY'", "system-message"))
         sys.exit(1)
     return api_key
 
@@ -87,8 +81,8 @@ def load_config():
     """
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONFIG_FILE_NAME)
     if not os.path.exists(config_path):
-        print(apply_color(f"Warning: Configuration file '{CONFIG_FILE_NAME}' not found at '{config_path}'.", "system-message"))
-        print(apply_color("Running with default settings (no 'ems' or custom colors loaded).", "system-message"))
+        console.print(apply_rich_style(f"Warning: Configuration file '{CONFIG_FILE_NAME}' not found at '{config_path}'.", "system-message"))
+        console.print(apply_rich_style("Running with default settings (no 'ems' or custom colors loaded).", "system-message"))
         return
 
     try:
@@ -114,10 +108,10 @@ def load_config():
                     CONFIG["colors"][tag_name] = color_value.lower() # Store color name in lowercase
 
     except ET.ParseError as e:
-        print(apply_color(f"Error parsing config file '{CONFIG_FILE_NAME}': {e}", "error-message"))
-        print(apply_color("Please check the XML/HTML-like structure of your config file.", "system-message"))
+        console.print(apply_rich_style(f"Error parsing config file '{CONFIG_FILE_NAME}': {e}", "error-message"))
+        console.print(apply_rich_style("Please check the XML/HTML-like structure of your config file.", "system-message"))
     except Exception as e:
-        print(apply_color(f"An unexpected error occurred while loading config: {e}", "error-message"))
+        console.print(apply_rich_style(f"An unexpected error occurred while loading config: {e}", "error-message"))
 
 
 def get_gemini_response(prompt_text, chat_history=None, model_name=DEFAULT_MODEL):
@@ -139,10 +133,10 @@ def get_gemini_response(prompt_text, chat_history=None, model_name=DEFAULT_MODEL
         if response and response.text:
             return response.text.strip(), chat
         else:
-            return apply_color("Gemini returned an empty response.", "system-message"), chat
+            return apply_rich_style("Gemini returned an empty response.", "system-message"), chat
 
     except Exception as e:
-        return apply_color(f"Error communicating with Gemini (model: {model_name}): {e}", "error-message"), None
+        return apply_rich_style(f"Error communicating with Gemini (model: {model_name}): {e}", "error-message"), None
 
 
 def main():
@@ -150,13 +144,13 @@ def main():
     Main function to parse arguments and run the gg CLI tool.
     """
     parser = argparse.ArgumentParser(
-        description=apply_color("A Gemini-powered terminal assistant (gg).", "system-message"),
+        description=apply_rich_style("A Gemini-powered terminal assistant (gg).", "system-message"),
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "query",
         nargs="*",
-        help=apply_color("Your question or command for Gemini.\n"
+        help=apply_rich_style("Your question or command for Gemini.\n"
                          "  E.g., `gg \"How do I list files?\"`\n"
                          "  To use an 'em', prefix with 'em:' (e.g., `gg em:explain-error \"E: Broken packages\"`)\n"
                          "  Use `gg chat` or `gg -c` for interactive mode.", "system-message")
@@ -164,12 +158,12 @@ def main():
     parser.add_argument(
         "-c", "--chat",
         action="store_true",
-        help=apply_color("Enter interactive chat mode with Gemini.", "system-message")
+        help=apply_rich_style("Enter interactive chat mode with Gemini.", "system-message")
     )
     parser.add_argument(
         "-m", "--model",
         default=DEFAULT_MODEL,
-        help=apply_color(f"Specify the Gemini model to use (default: {DEFAULT_MODEL}).\n"
+        help=apply_rich_style(f"Specify the Gemini model to use (default: {DEFAULT_MODEL}).\n"
                          "  E.g., `gg -m gemini-1.5-flash-latest \"Explain tensors.\"`", "system-message")
     )
 
@@ -198,17 +192,18 @@ def main():
 
     if args.chat or (args.query and args.query[0].lower() == 'chat'):
         # Interactive chat mode
-        print(apply_color(f"--- Entering interactive chat mode (Model: {selected_model}) ---", "system-message"))
-        print(apply_color("Type 'exit', 'quit', 'bye', or Ctrl+C to end.", "system-message"))
+        console.print(apply_rich_style(f"--- Entering interactive chat mode (Model: {selected_model}) ---", "system-message"))
+        console.print(apply_rich_style("Type 'exit', 'quit', 'bye', or Ctrl+C to end.", "system-message"))
         chat_history = None
         current_chat_session = None
 
         try:
             while True:
                 try:
-                    user_input = input(apply_color("(Gemini) > ", "system-message")).strip() # Color user prompt
+                    # Using console.input which can take a rich.text.Text object as prompt
+                    user_input = console.input(apply_rich_style("(Gemini) > ", "system-message")).strip()
                     if user_input.lower() in ["exit", "quit", "bye"]:
-                        print(apply_color("--- Exiting chat mode. Goodbye! ---", "system-message"))
+                        console.print(apply_rich_style("--- Exiting chat mode. Goodbye! ---", "system-message"))
                         break
                     if not user_input:
                         continue
@@ -221,37 +216,43 @@ def main():
 
                             if em_name_interactive in CONFIG["ems"]:
                                 full_prompt = CONFIG["ems"][em_name_interactive].replace("{input}", em_input_interactive)
-                                print(apply_color(f"(Using Em '{em_name_interactive}'...)", "system-message"))
+                                console.print(apply_rich_style(f"(Using Em '{em_name_interactive}'...)", "system-message"))
                                 response_text, current_chat_session = get_gemini_response(full_prompt, current_chat_session, model_name=selected_model)
                             else:
-                                response_text = apply_color(f"Error: Em '{em_name_interactive}' not found in '{CONFIG_FILE_NAME}'.", "error-message")
+                                response_text = apply_rich_style(f"Error: Em '{em_name_interactive}' not found in '{CONFIG_FILE_NAME}'.", "error-message")
                                 current_chat_session = current_chat_session
                         else:
                             response_text, current_chat_session = get_gemini_response(user_input, current_chat_session, model_name=selected_model)
                     else:
                         response_text, current_chat_session = get_gemini_response(user_input, current_chat_session, model_name=selected_model)
 
-                    print(apply_color(response_text, "response-text")) # Apply color to Gemini's response
+                    # Use Rich for rendering Gemini's response with its default formatting
+                    # We can use the style argument for the Markdown object directly if the config color is a rich-compatible style
+                    response_style = get_rich_style_name("response-text")
+                    console.print(Markdown(response_text, style=response_style))
+
 
                 except KeyboardInterrupt:
-                    print(apply_color("\n--- Exiting chat mode. Goodbye! ---", "system-message"))
+                    console.print(apply_rich_style("\n--- Exiting chat mode. Goodbye! ---", "system-message"))
                     break
                 except EOFError:
-                    print(apply_color("\n--- Exiting chat mode. Goodbye! ---", "system-message"))
+                    console.print(apply_rich_style("\n--- Exiting chat mode. Goodbye! ---", "system-message"))
                     break
         except Exception as e:
-            print(apply_color(f"An unexpected error occurred in chat mode: {e}", "error-message"))
+            console.print(apply_rich_style(f"An unexpected error occurred in chat mode: {e}", "error-message"))
 
     elif is_em_call:
         # Single-shot "em" query mode
         if em_name in CONFIG["ems"]:
             full_prompt = CONFIG["ems"][em_name].replace("{input}", em_input)
-            print(apply_color(f"Using Em '{em_name}' (Model: {selected_model})...", "system-message"))
+            console.print(apply_rich_style(f"Using Em '{em_name}' (Model: {selected_model})...", "system-message"))
             response_text, _ = get_gemini_response(full_prompt, model_name=selected_model)
-            print(apply_color(response_text, "response-text")) # Apply color to Gemini's response
+            # Use Rich for rendering Gemini's response with its default formatting
+            response_style = get_rich_style_name("response-text")
+            console.print(Markdown(response_text, style=response_style))
         else:
-            print(apply_color(f"Error: Em '{em_name}' not found in '{CONFIG_FILE_NAME}'.", "error-message"))
-            print(apply_color("Please check your config file or the 'em' name.", "system-message"))
+            console.print(apply_rich_style(f"Error: Em '{em_name}' not found in '{CONFIG_FILE_NAME}'.", "error-message"))
+            console.print(apply_rich_style("Please check your config file or the 'em' name.", "system-message"))
             sys.exit(1)
 
     elif args.query:
@@ -261,12 +262,14 @@ def main():
             parser.print_help()
             sys.exit(1)
 
-        print(apply_color(f"Sending query to Gemini (Model: {selected_model})...", "system-message"))
+        console.print(apply_rich_style(f"Sending query to Gemini (Model: {selected_model})...", "system-message"))
         response_text, _ = get_gemini_response(query, model_name=selected_model)
-        print(apply_color(response_text, "response-text")) # Apply color to Gemini's response
+        # Use Rich for rendering Gemini's response with its default formatting
+        response_style = get_rich_style_name("response-text")
+        console.print(Markdown(response_text, style=response_style))
     else:
         # No arguments given, print help
-        parser.print_help() # Help text already uses color via apply_color
+        parser.print_help()
         sys.exit(1)
 
 
