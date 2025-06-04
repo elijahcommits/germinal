@@ -8,7 +8,7 @@ import sys
 import xml.etree.ElementTree as ET
 from rich.console import Console
 from rich.markdown import Markdown
-from rich.text import Text # NEW: Import Text for consistent styling
+from rich.text import Text
 
 # --- Configuration Constants ---
 DEFAULT_MODEL = 'gemini-1.5-flash-latest' # Set your default model here
@@ -20,18 +20,6 @@ CONFIG = {
     "colors": {}
 }
 
-# No longer need COLOR_MAP for direct ANSI codes, rich handles styles directly.
-# Keeping it commented out for reference if needed for very specific non-rich cases.
-# COLOR_MAP = {
-#     "black": "\033[30m", "red": "\033[31m", "green": "\033[32m", "yellow": "\033[33m",
-#     "blue": "\033[34m", "magenta": "\033[35m", "cyan": "\033[36m", "white": "\033[37m",
-#     "light_black": "\033[90m", "light_red": "\033[91m", "light_green": "\033[92m",
-#     "light_yellow": "\033[93m", "light_blue": "\033[94m", "light_magenta": "\033[95m",
-#     "light_cyan": "\033[96m", "light_white": "\033[97m",
-#     "reset": "\033[0m"
-# }
-
-
 # Initialize Rich Console for all output
 console = Console()
 
@@ -42,7 +30,7 @@ def get_rich_style_name(element_name):
     and can even use hex codes like "#FF00FF" if you configure them.
     """
     color_name = CONFIG["colors"].get(element_name)
-    return color_name if color_name else "default" # Fallback to rich's default style
+    return color_name if color_name else "default"
 
 
 def apply_rich_style(text, element_name):
@@ -144,27 +132,28 @@ def main():
     Main function to parse arguments and run the gg CLI tool.
     """
     parser = argparse.ArgumentParser(
-        description=apply_rich_style("A Gemini-powered terminal assistant (gg).", "system-message"),
+        # Removed apply_rich_style from description and help strings
+        description="A Gemini-powered terminal assistant (gg).",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
         "query",
         nargs="*",
-        help=apply_rich_style("Your question or command for Gemini.\n"
-                         "  E.g., `gg \"How do I list files?\"`\n"
-                         "  To use an 'em', prefix with 'em:' (e.g., `gg em:explain-error \"E: Broken packages\"`)\n"
-                         "  Use `gg chat` or `gg -c` for interactive mode.", "system-message")
+        help="Your question or command for Gemini.\n"
+             "  E.g., `gg \"How do I list files?\"`\n"
+             "  To use an 'em', prefix with 'em:' (e.g., `gg em:explain-error \"E: Broken packages\"`)\n"
+             "  Use `gg chat` or `gg -c` for interactive mode."
     )
     parser.add_argument(
         "-c", "--chat",
         action="store_true",
-        help=apply_rich_style("Enter interactive chat mode with Gemini.", "system-message")
+        help="Enter interactive chat mode with Gemini."
     )
     parser.add_argument(
         "-m", "--model",
         default=DEFAULT_MODEL,
-        help=apply_rich_style(f"Specify the Gemini model to use (default: {DEFAULT_MODEL}).\n"
-                         "  E.g., `gg -m gemini-1.5-flash-latest \"Explain tensors.\"`", "system-message")
+        help=f"Specify the Gemini model to use (default: {DEFAULT_MODEL}).\n"
+             "  E.g., `gg -m gemini-1.5-flash-latest \"Explain tensors.\"`"
     )
 
     args = parser.parse_args()
@@ -200,7 +189,6 @@ def main():
         try:
             while True:
                 try:
-                    # Using console.input which can take a rich.text.Text object as prompt
                     user_input = console.input(apply_rich_style("(Gemini) > ", "system-message")).strip()
                     if user_input.lower() in ["exit", "quit", "bye"]:
                         console.print(apply_rich_style("--- Exiting chat mode. Goodbye! ---", "system-message"))
@@ -226,8 +214,6 @@ def main():
                     else:
                         response_text, current_chat_session = get_gemini_response(user_input, current_chat_session, model_name=selected_model)
 
-                    # Use Rich for rendering Gemini's response with its default formatting
-                    # We can use the style argument for the Markdown object directly if the config color is a rich-compatible style
                     response_style = get_rich_style_name("response-text")
                     console.print(Markdown(response_text, style=response_style))
 
@@ -247,7 +233,6 @@ def main():
             full_prompt = CONFIG["ems"][em_name].replace("{input}", em_input)
             console.print(apply_rich_style(f"Using Em '{em_name}' (Model: {selected_model})...", "system-message"))
             response_text, _ = get_gemini_response(full_prompt, model_name=selected_model)
-            # Use Rich for rendering Gemini's response with its default formatting
             response_style = get_rich_style_name("response-text")
             console.print(Markdown(response_text, style=response_style))
         else:
@@ -259,17 +244,18 @@ def main():
         # Standard single-shot query mode
         query = " ".join(args.query).strip()
         if not query:
-            parser.print_help()
+            # Use rich for the help message
+            console.print(apply_rich_style(parser.format_help(), "system-message"))
             sys.exit(1)
 
         console.print(apply_rich_style(f"Sending query to Gemini (Model: {selected_model})...", "system-message"))
         response_text, _ = get_gemini_response(query, model_name=selected_model)
-        # Use Rich for rendering Gemini's response with its default formatting
         response_style = get_rich_style_name("response-text")
         console.print(Markdown(response_text, style=response_style))
     else:
         # No arguments given, print help
-        parser.print_help()
+        # Use rich for the help message
+        console.print(apply_rich_style(parser.format_help(), "system-message"))
         sys.exit(1)
 
 

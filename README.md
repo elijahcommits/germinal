@@ -133,7 +133,7 @@ Now, let's get your Linux computer ready for `GERMINAL`\! We'll use a powerful t
     source venv/bin/activate
     ```
 
-      * **`source`:** This command "activates" your special `venv` box. You'll know it worked because your terminal prompt will magically change to start with **`(venv)`** like this: `(venv) e@ecb:~/Projects/dev/gg-cli-tool$`. This means you're now working safely inside `GERMINAL`'s isolated space\!
+      * **`source`:** This command "activates" your special `venv` box. You'll know it worked because your terminal prompt will magically change to start with **`(venv)`** like this: `(venv) e@ecb:~/Projects/dev/germinal`. This means you're now working safely inside `GERMINAL`'s isolated space\!
 
 -----
 
@@ -187,7 +187,7 @@ This is where `GERMINAL` transforms into a command you can just type anywhere in
 
       * Go back into your `GERMINAL` project folder (if you left it):
         ```bash
-        cd ~/Projects/dev/gg-cli-tool
+        cd ~/Projects/dev/germinal
         ```
       * Open the `gg.py` file:
         ```bash
@@ -224,7 +224,7 @@ This is where `GERMINAL` transforms into a command you can just type anywhere in
 
       * Make sure you are in your `GERMINAL` project folder:
         ```bash
-        cd ~/Projects/dev/gg-cli-tool
+        cd ~/Projects/dev/germinal
         ```
       * Create the shortcut for the `gg` command itself:
         ```bash
@@ -355,7 +355,7 @@ It's totally normal to run into small issues in development, but don't worry –
       * **Problem:** Your computer can't find the `gg` command when you type it.
       * **Solution:**
         1.  Did you open a **new terminal window** after completing Step 4? If not, please do that now\!
-        2.  Double-check that the shortcut for `gg` exists and points correctly: Type `ls -l ~/bin/gg` and press Enter. It should show something like `-> /home/yourusername/Projects/dev/gg-cli-tool/gg.py`. If not, carefully re-do Step 4.5.
+        2.  Double-check that the shortcut for `gg` exists and points correctly: Type `ls -l ~/bin/gg` and press Enter. It should show something like `-> /home/yourusername/Projects/dev/germinal/gg.py`. If not, carefully re-do Step 4.5.
         3.  Verify your `~/bin` folder is part of your system's search path: Type `echo $PATH` and press Enter. You should see `/home/yourusername/bin` somewhere in the output. If it's missing, re-do Step 4.1 very carefully.
 
   * **`Error: GOOGLE_API_KEY environment variable not set.`**
