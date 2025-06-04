@@ -116,7 +116,7 @@ Now, let's get your Linux computer ready for `GERMINAL`\! We'll use a powerful t
 7.  **Dive into the `GERMINAL` Project Folder:**
 
     ```bash
-    cd gg-cli-tool
+    cd germinal
     ```
 
 8.  **Create a Virtual Environment (Your Super Clean Workspace\!):**
