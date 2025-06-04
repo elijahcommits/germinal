@@ -106,7 +106,7 @@ Now, let's get your Linux computer ready for `GERMINAL`\! We'll use a powerful t
     Time to get the actual `GERMINAL` code\!
 
     ```bash
-    git clone https://github.com/elijahcommits/gg-cli-tool.git # IMPORTANT: REPLACE THIS URL!
+    git clone https://github.com/elijahcommits/germinal.git
     ```
 
       * **`git clone`:** This command downloads a complete copy of the `GERMINAL` project from GitHub onto your computer.
