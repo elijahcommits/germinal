@@ -24,7 +24,7 @@ Don't worry if you've never touched a command prompt or heard of Git before\! Th
 
 Please make sure you have these things ready:
 
-1.  **A Computer with Debian-based Linux:** This guide is specifically written for Linux operating systems that are based on Debian. This includes popular choices like **MX Linux** (which is what you're using\!), **Ubuntu**, Linux Mint, Pop\!\_OS, and many others.
+1.  **A Computer with Debian-based Linux:** This guide is specifically written for Linux operating systems that are based on Debian. This includes popular choices like **MX Linux** (which is what I initially spun up this project on\!), **Ubuntu**, Linux Mint, Pop\!\_OS, and many others.
 2.  **An Active Internet Connection:** `GERMINAL` needs the internet to talk to Google's super-smart AI brains\!
 3.  **A Google Account:** You'll need this to get your special AI key from Google.
 
