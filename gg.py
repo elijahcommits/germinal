@@ -132,7 +132,6 @@ def main():
     Main function to parse arguments and run the gg CLI tool.
     """
     parser = argparse.ArgumentParser(
-        # Removed apply_rich_style from description and help strings
         description="A Gemini-powered terminal assistant (gg).",
         formatter_class=argparse.RawTextHelpFormatter
     )
@@ -189,12 +188,20 @@ def main():
         try:
             while True:
                 try:
+                    # Input prompt uses rich styling
                     user_input = console.input(apply_rich_style("(Gemini) > ", "system-message")).strip()
                     if user_input.lower() in ["exit", "quit", "bye"]:
                         console.print(apply_rich_style("--- Exiting chat mode. Goodbye! ---", "system-message"))
                         break
                     if not user_input:
                         continue
+
+                    # --- FIX START ---
+                    # Ensure the prompt passed to get_gemini_response is always a plain string.
+                    # This means user_input should NOT be styled when sent to the API.
+                    prompt_to_gemini = user_input
+                    # --- FIX END ---
+
 
                     if user_input.lower().startswith('em:'):
                         parts = user_input.split(':', 1)
@@ -205,14 +212,17 @@ def main():
                             if em_name_interactive in CONFIG["ems"]:
                                 full_prompt = CONFIG["ems"][em_name_interactive].replace("{input}", em_input_interactive)
                                 console.print(apply_rich_style(f"(Using Em '{em_name_interactive}'...)", "system-message"))
+                                # Send the PLAIN STRING full_prompt to Gemini
                                 response_text, current_chat_session = get_gemini_response(full_prompt, current_chat_session, model_name=selected_model)
                             else:
                                 response_text = apply_rich_style(f"Error: Em '{em_name_interactive}' not found in '{CONFIG_FILE_NAME}'.", "error-message")
                                 current_chat_session = current_chat_session
                         else:
-                            response_text, current_chat_session = get_gemini_response(user_input, current_chat_session, model_name=selected_model)
+                            # Send the PLAIN STRING user_input to Gemini
+                            response_text, current_chat_session = get_gemini_response(prompt_to_gemini, current_chat_session, model_name=selected_model)
                     else:
-                        response_text, current_chat_session = get_gemini_response(user_input, current_chat_session, model_name=selected_model)
+                        # Send the PLAIN STRING user_input to Gemini
+                        response_text, current_chat_session = get_gemini_response(prompt_to_gemini, current_chat_session, model_name=selected_model)
 
                     response_style = get_rich_style_name("response-text")
                     console.print(Markdown(response_text, style=response_style))
@@ -232,6 +242,7 @@ def main():
         if em_name in CONFIG["ems"]:
             full_prompt = CONFIG["ems"][em_name].replace("{input}", em_input)
             console.print(apply_rich_style(f"Using Em '{em_name}' (Model: {selected_model})...", "system-message"))
+            # Send the PLAIN STRING full_prompt to Gemini
             response_text, _ = get_gemini_response(full_prompt, model_name=selected_model)
             response_style = get_rich_style_name("response-text")
             console.print(Markdown(response_text, style=response_style))
@@ -244,17 +255,16 @@ def main():
         # Standard single-shot query mode
         query = " ".join(args.query).strip()
         if not query:
-            # Use rich for the help message
             console.print(apply_rich_style(parser.format_help(), "system-message"))
             sys.exit(1)
 
         console.print(apply_rich_style(f"Sending query to Gemini (Model: {selected_model})...", "system-message"))
+        # Send the PLAIN STRING query to Gemini
         response_text, _ = get_gemini_response(query, model_name=selected_model)
         response_style = get_rich_style_name("response-text")
         console.print(Markdown(response_text, style=response_style))
     else:
         # No arguments given, print help
-        # Use rich for the help message
         console.print(apply_rich_style(parser.format_help(), "system-message"))
         sys.exit(1)
 
