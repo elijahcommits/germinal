@@ -110,8 +110,8 @@ Now, let's get your Linux computer ready for `GERMINAL`\! We'll use a powerful t
     ```
 
       * **`git clone`:** This command downloads a complete copy of the `GERMINAL` project from GitHub onto your computer.
-      * **`https://github.com/elijahcommits/gg-cli-tool.git`:** This is a placeholder\! **You MUST replace this with the actual URL of the `GERMINAL` project's GitHub page.** To find it, go to the project's GitHub page in your web browser, look for the green **"\< \> Code"** button, and click it to copy the HTTPS URL. Paste that URL here instead of the placeholder\!
-      * After this command finishes, you'll see a new folder named `gg-cli-tool` magically appear inside your `~/Projects/dev/` folder.
+      * **`https://github.com/elijahcommits/germinal.git`:**
+      * After this command finishes, you'll see a new folder named `germinal` magically appear inside your `~/Projects/dev/` folder.
 
 7.  **Dive into the `GERMINAL` Project Folder:**
 
